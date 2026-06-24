@@ -1,6 +1,7 @@
 ---
 name: test-driven-development
 description: Use when implementing any feature or bugfix, before writing implementation code
+disable-model-invocation: true
 ---
 
 # Test-Driven Development (TDD)
@@ -202,6 +203,26 @@ Next failing test for next feature.
 | **Minimal** | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
+| **Grouped** | Multiple test files for one feature live in a subfolder | `test_feature_a.py`, `test_feature_b.py` scattered in parent dirs |
+
+## Test File Organization
+
+When a feature needs more than one test file, group non-endpoint tests in a dedicated subfolder under `tests/`:
+
+```
+tests/backend/auto_overlay/
+  test_orchestrator.py
+  test_create_batch_unit.py
+tests/backend/endpoints/
+  test_auto_overlay_create.py
+  test_auto_overlay_create_batch.py
+```
+
+Keep HTTP/endpoint tests under `tests/backend/endpoints/`. Put unit and helper tests for the same feature in a sibling subfolder (e.g. `tests/backend/auto_overlay/`).
+
+Prefer this over scattering several `test_<feature>_*.py` files flat in `tests/backend/`.
+
+Keep shared fixtures in the nearest `conftest.py` (`tests/backend/endpoints/conftest.py` for endpoint tests; the feature subfolder's `conftest.py` when unit tests need their own).
 
 ## Why Order Matters
 

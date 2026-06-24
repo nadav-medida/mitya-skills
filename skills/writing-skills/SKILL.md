@@ -371,6 +371,10 @@ pptx/
 ```
 When: Reference material too large for inline
 
+### Test Files for a Feature
+
+When documenting or authoring tests alongside skills, apply the same grouping rule as **test-driven-development**: keep endpoint tests under `tests/backend/endpoints/`; group other test files for the same feature in a sibling subfolder (e.g. `tests/backend/auto_overlay/`) with a local `conftest.py` when needed—not scattered as `test_<feature>_*.py` in `tests/backend/`.
+
 ## The Iron Law (Same as TDD)
 
 ```

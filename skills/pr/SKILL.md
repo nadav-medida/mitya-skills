@@ -68,6 +68,7 @@ Once a PR and Linear issue exist, the branch is not frozen. **Any later change t
 
 After pushing follow-up work, re-read the full branch delta (per above) and:
 - Update the PR body via `gh pr edit <num> --body ...` (and `--title` if needed).
+- If `gh pr edit` fails with a `repository.pullRequest.projectCards` GraphQL/Projects Classic error, update via REST instead: `gh api repos/<owner>/<repo>/pulls/<num> -X PATCH -f title=... -f body=...`.
 - Update the Linear issue via the Linear MCP `save_issue` (`id` = the issue identifier) to match.
 
 ## Scope: one branch or many

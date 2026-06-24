@@ -14,8 +14,14 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 ## Workflow
 
 0. **Existing PR** — if `gh pr list --head <branch>` finds one, triage before local checks:
-   - **CI** — `gh pr checks <num>` (or Actions tab). Fix failures you can address locally, re-run local gates, commit.
-   - **Review feedback** — inline review comments, bot findings (Greptile, Bugbot, etc.), and human comments about code issues, quality, or requested changes. **Address actionable items** as part of this workflow; skip pure nits or subjective disagreements unless the user said otherwise.
+   - **Conflicts** — first, check whether the PR currently conflicts with its base (for example, `gh pr view <num> --json mergeStateStatus,baseRefName`) or `git status` shows an in-progress merge/rebase/cherry-pick or unmerged paths. If conflicts exist, rebase onto the PR base and resolve them before CI or review triage:
+     - Inspect conflicted files and the active operation (`git status`, `git diff --name-only --diff-filter=U`, and the PR/base context). Prefer the existing codebase/base-branch patterns over blindly taking either side.
+     - After resolving, stage the files and continue the operation (`git rebase --continue`, `git merge --continue`, or `git cherry-pick --continue`). If the correct resolution is ambiguous or changes PR scope, stop and ask.
+     - Then continue existing-PR triage. Do not abort the operation unless the user explicitly asks or the branch cannot be safely recovered.
+   - **CI** — `gh pr checks <num>` (or Actions tab). Fix failures you can address locally, re-run local gates, commit. One actionable fix pass only; after pushing the fix, do not continue monitoring or loop on newly reported CI failures unless the user invoked `babysit`.
+   - **Review feedback** — inline review comments, submitted reviews, issue-level PR comments, bot findings (Greptile, Bugbot, etc.), and human comments about code issues, quality, or requested changes. **Address actionable items** as part of this workflow; skip pure nits or subjective disagreements unless the user said otherwise.
+     - Check all feedback surfaces: inline review comments, submitted reviews, and issue-level PR comments. Bot findings can appear as issue-level comments when inline comments are outside the diff; search for bot markers such as `greptile_failed_comments`, `bugbot`, and confidence summaries.
+     - Keep review-fix changes narrowly scoped to the comment. Do not restore or reintroduce adjacent prior behavior from the base branch unless the comment explicitly asks for it; if the intended scope is ambiguous, stop and ask.
    - If nothing actionable remains, proceed.
 1. **Scope** — which repo/branch(es)? May be multi-repo; if unclear, ask.
 2. **Branch** — if not on a feature branch, create `feature/<short-kebab-description>` off `main`. Descriptive kebab names only, no ticket IDs (details in Medida → Branch).
@@ -47,11 +53,11 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 | Repo | Linter fix | Then |
 |------|------------|------|
 | medida-web | `pnpm lint:fix` | `pnpm typecheck` |
-| medida-3d | `ruff check --fix <changed files>` | `.venv/bin/pyright <files>`, targeted pytest when relevant |
+| medida-3d | `uv run --no-sync ruff check --fix <changed Python files>` | `uv run --no-sync pyright`, targeted pytest via `uv run --no-sync pytest ...` when relevant |
 | medida-ui | `scripts/lint.sh` (`swiftlint --fix && swiftlint`) | — |
 
 - medida-web: CI also runs `pnpm format:check` — skip unless asked. If `pnpm typecheck` fails with missing-module / dependency errors (`Cannot find module`), run `pnpm install` once and retry before reporting failure.
-- medida-3d: changed files only — diff against the PR **base** branch, not always `main` (stacked PRs: e.g. `feature/python-3.12-migration`). Use `git diff <base>...HEAD --name-only`; infer `<base>` from `gh pr view --json baseRefName`, conversation, or ask. Don't run full Docker CI (`tools/ci.sh check`) unless asked.
+- medida-3d: run ruff on changed Python files only. Run pyright for the full repo/workspace because typing changes can affect far-away imports and call sites. Use `git diff <base>...HEAD --name-only` to choose ruff/test targets; infer `<base>` from `gh pr view --json baseRefName`, conversation, or ask. Run Python tools through `uv run --no-sync` from the relevant workspace so PATH, VIRTUAL_ENV, and interpreter selection match CI. Don't run full Docker CI (`tools/ci.sh check`) unless asked.
 - medida-ui: fix all warnings; only `// swiftlint:disable type_body_length` on architecturally large files (e.g. `CameraScanView`). Don't run full `xcodebuild` unless asked. No GitHub Actions CI — local SwiftLint is the gate.
 
 **Multi-repo order** — open PRs in dependency order: 1) medida-3d (migration/schema/API), 2) medida-web (frontend/orpc), 3) medida-ui (iOS). Only repos that changed; stack bases when one PR depends on another. Each PR gets its own Linear sub-issue (see pr).

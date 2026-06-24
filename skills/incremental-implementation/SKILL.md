@@ -1,6 +1,7 @@
 ---
 name: incremental-implementation
 description: Delivers changes incrementally. Use when implementing any feature or change that touches more than one file. Use when you're about to write a large amount of code at once, or when a task feels too big to land in one step.
+disable-model-invocation: true
 ---
 
 # Incremental Implementation
@@ -41,7 +42,19 @@ For each slice:
 4. **Commit** -- save your progress with a descriptive message (see `git-workflow-and-versioning` for atomic commit guidance)
 5. **Move to the next slice** — carry forward, don't restart
 
-If repo or user rules restrict commits, ask for commit permission before starting multi-slice work. Do not silently accumulate large uncommitted slices: once commits are authorized, checkpoint each verified slice; if commits are blocked, say so explicitly and keep the user informed.
+Per-slice commits are mandatory by default. Before starting multi-slice work, check whether higher-priority repo or user rules restrict commits. If they do, explicitly ask the user for commit authorization so you can checkpoint each verified slice. Do not silently downgrade commits to "optional" and do not silently accumulate large uncommitted slices. If authorization is denied, say that commits are blocked and keep the user informed after each verified slice.
+
+### Commit Authorization Gate
+
+If any instruction says "do not commit unless asked" or otherwise restricts commits, you have not satisfied incremental implementation until you ask:
+
+> This workflow expects a commit after each verified slice. May I commit after each slice?
+
+Proceed according to the user's answer:
+
+- **Authorized:** commit after each slice passes verification.
+- **Denied:** continue incrementally, but explicitly report that slices are verified and left uncommitted.
+- **Unanswered:** do not start the multi-slice implementation yet unless the user explicitly asks you to proceed without commits.
 
 ## Slicing Strategies
 
@@ -208,7 +221,7 @@ After each increment, verify:
 - [ ] Type checking passes (`npx tsc --noEmit`)
 - [ ] Linting passes (`npm run lint`)
 - [ ] The new functionality works as expected
-- [ ] The change is committed with a descriptive message
+- [ ] The change is committed with a descriptive message, or commits were explicitly blocked by the user after you asked for authorization
 
 **Note:** Run each verification command after a change that could affect it. After a successful run, don't repeat the same command unless the code has changed since — re-running on unchanged code adds no information.
 
@@ -219,6 +232,7 @@ After each increment, verify:
 | "I'll test it all at the end" | Bugs compound. A bug in Slice 1 makes Slices 2-5 wrong. Test each slice. |
 | "It's faster to do it all at once" | It *feels* faster until something breaks and you can't find which of 500 changed lines caused it. |
 | "These changes are too small to commit separately" | Small commits are free. Large commits hide bugs and make rollbacks painful. |
+| "The repo says don't commit unless asked, so I'll just skip commits" | Ask for commit authorization before starting. If denied, explicitly report that verified slices remain uncommitted. |
 | "I'll add the feature flag later" | If the feature isn't complete, it shouldn't be user-visible. Add the flag now. |
 | "This refactor is small enough to include" | Refactors mixed with features make both harder to review and debug. Separate them. |
 | "Let me run the build command again just to be sure" | After a successful run, repeating the same command adds nothing unless the code has changed since. Run it again after subsequent edits, not as reassurance. |
@@ -231,6 +245,7 @@ After each increment, verify:
 - Skipping the test/verify step to move faster
 - Build or tests broken between increments
 - Large uncommitted changes accumulating
+- Treating commits as optional without asking for authorization
 - Building abstractions before the third use case demands it
 - Touching files outside the task scope "while I'm here"
 - Creating new utility files for one-time operations

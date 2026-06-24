@@ -23,6 +23,16 @@ Use the skill identifiers that match the current environment. Examples: `/test-d
 
 If the current environment uses slash-style skill names, preserve the leading slash. `test-driven-development` is not an acceptable substitute for `/test-driven-development`.
 
+## Incremental Implementation Commit Gate
+
+When a plan requires `/incremental-implementation`, the plan must also carry forward its commit authorization gate. If higher-priority instructions or repo rules say the executor cannot commit unless explicitly asked, the plan must instruct the executor to ask the user for commit authorization before starting multi-slice work.
+
+Use direct language in the plan, for example:
+
+```markdown
+Because this plan uses /incremental-implementation, executors must commit after each verified slice. If the current environment does not allow commits by default, ask the user before starting: "This plan expects a commit after each verified slice. May I commit after each slice?"
+```
+
 ## Mapping Rule
 
 Before writing the plan's execution instructions:
@@ -30,7 +40,8 @@ Before writing the plan's execution instructions:
 1. List every practice the plan relies on: TDD, incremental implementation, subagent-driven development, code review, worktrees, security review, database migrations, etc.
 2. Map each practice to a specific existing skill.
 3. Put the required skill references at the start of the plan.
-4. Then describe plan-specific execution details.
+4. If `/incremental-implementation` is included and commits are restricted by default, add the commit authorization instruction.
+5. Then describe plan-specific execution details.
 
 If you cannot map a practice to a specific skill, ask the human partner instead of writing a vague concept.
 
@@ -41,6 +52,7 @@ If you cannot map a practice to a specific skill, ask the human partner instead 
 | "Use TDD" | `REQUIRED SKILLS: Read /test-driven-development ...` |
 | "Use subagent-driven development" | `REQUIRED SKILLS: Read /subagent-driven-development ...` |
 | "Work incrementally" | `REQUIRED SKILLS: Read /incremental-implementation ...` |
+| "Work incrementally, but commits are restricted" | Require `/incremental-implementation` and instruct executors to ask for commit authorization before starting |
 | "Follow the repo review workflow" | Reference the exact review skill, or ask if unclear |
 
 ## Common Mistakes
@@ -49,4 +61,5 @@ If you cannot map a practice to a specific skill, ask the human partner instead 
 - Assuming future agents know what "TDD", "incremental", "reviews", or "subagents" mean.
 - Listing skill names later in the plan instead of starting with them.
 - Dropping the skill prefix, such as writing `test-driven-development` when the actual skill reference is `/test-driven-development`.
+- Naming `/incremental-implementation` but omitting the required commit authorization question when commits are not allowed by default.
 - Inventing a skill reference when no matching skill is known. Ask instead.
