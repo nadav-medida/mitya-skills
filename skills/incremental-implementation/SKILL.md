@@ -1,6 +1,6 @@
 ---
 name: incremental-implementation
-description: Delivers changes incrementally. Use when implementing any feature or change that touches more than one file. Use when you're about to write a large amount of code at once, or when a task feels too big to land in one step.
+description: Deliver multi-file changes in thin, verified, committed slices.
 disable-model-invocation: true
 ---
 
@@ -39,10 +39,10 @@ For each slice:
 1. **Implement** the smallest complete piece of functionality
 2. **Test** — run the test suite (or write a test if none exists)
 3. **Verify** — confirm the slice works as expected (tests pass, build succeeds, manual check)
-4. **Commit** -- save your progress with a descriptive message (see `git-workflow-and-versioning` for atomic commit guidance)
+4. **Commit** — save your progress with a descriptive message
 5. **Move to the next slice** — carry forward, don't restart
 
-Per-slice commits are mandatory by default. Before starting multi-slice work, check whether higher-priority repo or user rules restrict commits. If they do, explicitly ask the user for commit authorization so you can checkpoint each verified slice. Do not silently downgrade commits to "optional" and do not silently accumulate large uncommitted slices. If authorization is denied, say that commits are blocked and keep the user informed after each verified slice.
+Per-slice commits are mandatory by default. Do not silently downgrade commits to "optional" and do not silently accumulate large uncommitted slices — see the gate below.
 
 ### Commit Authorization Gate
 
@@ -159,71 +159,15 @@ Each increment changes one logical thing. Don't mix concerns:
 
 After each increment, the project must build and existing tests must pass. Don't leave the codebase in a broken state between slices.
 
-### Rule 3: Feature Flags for Incomplete Features
-
-If a feature isn't ready for users but you need to merge increments:
-
-```typescript
-// Feature flag for work-in-progress
-const ENABLE_TASK_SHARING = process.env.FEATURE_TASK_SHARING === 'true';
-
-if (ENABLE_TASK_SHARING) {
-  // New sharing UI
-}
-```
-
-This lets you merge small increments to the main branch without exposing incomplete work.
-
-### Rule 4: Safe Defaults
-
-New code should default to safe, conservative behavior:
-
-```typescript
-// Safe: disabled by default, opt-in
-export function createTask(data: TaskInput, options?: { notify?: boolean }) {
-  const shouldNotify = options?.notify ?? false;
-  // ...
-}
-```
-
-### Rule 5: Rollback-Friendly
-
-Each increment should be independently revertable:
-
-- Additive changes (new files, new functions) are easy to revert
-- Modifications to existing code should be minimal and focused
-- Database migrations should have corresponding rollback migrations
-- Avoid deleting something in one commit and replacing it in the same commit — separate them
-
-## Working with Agents
-
-When directing an agent to implement incrementally:
-
-```
-"Let's implement Task 3 from the plan.
-
-Start with just the database schema change and the API endpoint.
-Don't touch the UI yet — we'll do that in the next increment.
-
-After implementing, run `npm test` and `npm run build` to verify
-nothing is broken."
-```
-
-Be explicit about what's in scope and what's NOT in scope for each increment.
-
 ## Increment Checklist
 
 After each increment, verify:
 
 - [ ] The change does one thing and does it completely
-- [ ] All existing tests still pass (`npm test`)
-- [ ] The build succeeds (`npm run build`)
-- [ ] Type checking passes (`npx tsc --noEmit`)
-- [ ] Linting passes (`npm run lint`)
+- [ ] All existing tests still pass (the repo's test command)
+- [ ] Build, typecheck, and lint pass (detect the repo's commands from package.json scripts, Makefile, AGENTS.md/CLAUDE.md)
 - [ ] The new functionality works as expected
 - [ ] The change is committed with a descriptive message, or commits were explicitly blocked by the user after you asked for authorization
-
-**Note:** Run each verification command after a change that could affect it. After a successful run, don't repeat the same command unless the code has changed since — re-running on unchanged code adds no information.
 
 ## Common Rationalizations
 
@@ -233,7 +177,6 @@ After each increment, verify:
 | "It's faster to do it all at once" | It *feels* faster until something breaks and you can't find which of 500 changed lines caused it. |
 | "These changes are too small to commit separately" | Small commits are free. Large commits hide bugs and make rollbacks painful. |
 | "The repo says don't commit unless asked, so I'll just skip commits" | Ask for commit authorization before starting. If denied, explicitly report that verified slices remain uncommitted. |
-| "I'll add the feature flag later" | If the feature isn't complete, it shouldn't be user-visible. Add the flag now. |
 | "This refactor is small enough to include" | Refactors mixed with features make both harder to review and debug. Separate them. |
 | "Let me run the build command again just to be sure" | After a successful run, repeating the same command adds nothing unless the code has changed since. Run it again after subsequent edits, not as reassurance. |
 

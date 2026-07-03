@@ -11,9 +11,9 @@ disable-model-invocation: true
 Review and improve skills based on conversation experience.
 
 Before proposing changes, read `~/.claude/skills/writing-skills/SKILL.md` for skill
-writing best practices — description/CSO rules, structure conventions, token
-efficiency, and the test-first discipline. Apply those standards when drafting
-suggestions.
+writing best practices — description/trigger rules, information hierarchy, pruning
+against context cost, and the test-first discipline. Apply those standards when
+drafting suggestions.
 
 ## Retrospective Workflow
 
@@ -51,32 +51,6 @@ For each skill, identify:
 ### Step 4: Document Findings
 
 Produce the report using the single format in **Output Format** below. Per skill, capture: issues + root causes, concrete suggested fixes, and anything still missing.
-
-## Common Issues to Watch For
-
-### Command and Tool Mismatches
-
-- Verify CLI flags against `--help` or docs before documenting them
-- Document options that silently fail or behave differently than expected
-
-### Path and Identifier Handling
-
-- Document exact path formats the skill expects
-- Note when extensions, prefixes, or IDs must match precisely
-- Prefer patterns that extract IDs from authoritative sources (for example JSON list output)
-
-### Natural Language and Parsing
-
-- Document delimiter or naming conventions that parsers handle poorly
-- Recommend simple test cases before complex batch operations
-
-### Description and Triggering
-
-- Check whether the description is too narrow (undertrigger) or too broad (overtrigger)
-- Align description wording with skill-creator guidance on triggering
-- Descriptions should be a **short summary of what the skill covers** — topics/sections it handles and when to use it. Put workflow steps, commands, and long examples in the body or reference files, not in the description.
-- Good description: what domains it covers + trigger phrases (e.g. “Supabase migrations, asyncpg queries, SDK row typing”).
-- Bad description: procedural detail (“first run X, then Y”), duplicated body content, or meta-instructions (“read environment.md when imports fail”) that belong in SKILL.md.
 
 ## Actionable Improvements
 

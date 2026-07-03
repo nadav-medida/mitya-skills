@@ -16,7 +16,7 @@ Three dependencies, in order: **branch → Linear issue → PR**. A PR can only 
 ## Establish state, per branch in scope
 
 1. **Branch** — confirm you're on a feature branch (not `main`). If still on `main` or the branch name is wrong, create/rename per the Branch section below before anything else. Run `git status -sb`: no `...origin/<branch>` → fix per **Push**; `[ahead N]` → push per **Push** before `gh pr create`.
-2. **Linear issue** — use the ID/URL the user gave when it still tracks this PR's scope; otherwise create one (see **Medida → Linear**). "On top of ENG-XXXX" is usually a **git** dependency only — not a reason to nest the new issue under ENG-XXXX.
+2. **Linear issue** — use the ID/URL the user gave when it still tracks this PR's scope; otherwise create one (see **Medida → Linear**; "on top of ENG-XXXX" is a git dependency, not a Linear parent).
 3. **PR** — `gh pr list --head <branch>`. If one exists, make sure it references the issue (fix the title/body if not) and stop there. If none, create it (requires the branch to exist and be pushed).
 
 ## Branch
@@ -37,15 +37,12 @@ Branch comes first — you can't open a PR without one.
 
 ## Push
 
-Every push must leave the local branch tracking `origin/<branch>`
-
-### First push (new branch)
+Every push must leave the local branch tracking `origin/<branch>`. First push of a new branch:
 
 ```bash
 BRANCH=$(git branch --show-current)
-git push -u origin "${BRANCH}"
-git branch --set-upstream-to="origin/${BRANCH}" "${BRANCH}"
-git status -sb   # must show: ## <branch>...origin/<branch>
+git push -u origin "${BRANCH}"   # -u sets upstream tracking
+git status -sb                   # must show: ## <branch>...origin/<branch>
 ```
 
 ## Understand scope before naming
@@ -140,4 +137,4 @@ Linear: [ENG-XXXX](https://linear.app/medida/issue/ENG-XXXX/...)
 
 PR B depends on PR A: PR A `--base main`, PR B `--base <branch-of-PR-A>`. Note it in the body (e.g. "Stacks on #2140").
 
-For Linear: PR B still gets its **own** issue. If PR A's issue has a parent, PR B's issue is a **sibling** under that parent; if PR A's issue has no parent, PR B's issue is **parentless**. Do not make PR B's issue a child of PR A's issue.
+For Linear: PR B still gets its **own** issue, placed as a **sibling** of PR A's issue (or parentless if PR A's is) per **Medida → Linear** — never a child of PR A's issue.

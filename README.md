@@ -36,8 +36,6 @@ The pattern I use now:
   [`subagent-driven-development`](./skills/subagent-driven-development/SKILL.md),
   and sometimes
   [`test-driven-development`](./skills/test-driven-development/SKILL.md).
-- When code starts getting bloated, use
-  [`code-simplification`](./skills/code-simplification/SKILL.md).
 - [`pr`](./skills/pr/SKILL.md) for my instructions on creating a PR & linking to a Linear issue
 - [`finalize-feature`](./skills/finalize-feature/SKILL.md) any time code in the branch is ready for pushing & needs refinement (run checks / create PR if lacking, check PR comments)
 - After a session, use
@@ -75,23 +73,20 @@ repo-specific adaptation.
   Use a red-green-refactor loop when implementing features or bug fixes. Adapted
   from
   [`obra/superpowers`](https://github.com/obra/superpowers/blob/main/skills/test-driven-development/SKILL.md).
-- **[`code-simplification`](./skills/code-simplification/SKILL.md)** - Simplify
-  working code that has become harder to read, maintain, or extend. Adapted from
-  [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills/blob/main/skills/code-simplification/SKILL.md).
 - **[`improve-codebase-architecture`](./skills/improve-codebase-architecture/SKILL.md)** -
   Find deeper refactoring opportunities in a codebase. Adapted from
   [`mattpocock/skills`](https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md).
 
 ### Review And Shipping
 
-- **[`review`](./skills/review/SKILL.md)** - Review branch or work-in-progress
-  changes against standards and spec. Adapted from
-  [`mattpocock/skills`](https://github.com/mattpocock/skills/blob/main/skills/in-progress/review/SKILL.md).
 - **[`finalize-feature`](./skills/finalize-feature/SKILL.md)** - Prepare a
   branch for review: triage existing PR feedback, run checks, commit, push, and
   open or update a PR. Personal.
 - **[`pr`](./skills/pr/SKILL.md)** - Create or reconcile a branch, PR, and
   Linear issue so they describe the full branch scope. Personal.
+- **[`splitting-prs`](./skills/splitting-prs/SKILL.md)** - Split one oversized
+  branch into multiple reviewable, correctly linked PRs, optionally as a stacked
+  chain under a parent Linear issue. Personal.
 - **[`sep-worktree`](./skills/sep-worktree/SKILL.md)** - Isolate work in a
   separate git worktree and clean it up when the task is done. Personal.
 - **[`skill-review`](./skills/skill-review/SKILL.md)** - Retrospect on which

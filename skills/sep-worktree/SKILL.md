@@ -2,8 +2,7 @@
 name: sep-worktree
 description: >-
   Use when the user wants to isolate work in a separate git worktree, says
-  /sep-worktree, chooses worktree over in-place (e.g. from /think), or says
-  worktree done.
+  /sep-worktree, or says worktree done.
 disable-model-invocation: true
 ---
 
@@ -73,9 +72,3 @@ git worktree prune
 ```
 
 Do **not** delete the branch unless the user asks. If `worktree remove` fails because of uncommitted changes, report it and ask whether to force-remove or commit/stash first.
-
-## While active
-
-- Treat `.worktrees/$path` as the only workspace for this task until teardown.
-- PRs, commits, and validation run from the worktree checkout.
-- Say **worktree done** anytime to remove it early (see Teardown).

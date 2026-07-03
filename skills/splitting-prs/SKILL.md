@@ -42,15 +42,12 @@ Auto-overlay edges PR 4: Add batch endpoint
 
 ## Stack Shape
 
-Default to independent PRs off the default branch. Stack only when later slices depend on earlier slices.
+Default to independent PRs off the default branch. Stack only when later slices depend on earlier slices. For stack mechanics (bases, `Stacks on #N`, sibling Linear issues) follow **`pr`** → Stacked PRs.
 
-For a stack:
+Split-specific:
 
-- PR 1 targets the original base branch.
-- PR N targets PR N-1's branch.
-- PR bodies for PRs 2+ say `Stacks on #<previous-pr>`.
 - PR bodies explain setup-looking changes by naming the later PR or behavior they enable.
-- If a lower PR receives a fix, merge or cherry-pick that fix into every dependent branch, rerun checks, and push dependents so CI checks the updated head commit.
+- If a lower PR receives a fix, merge or cherry-pick it into every dependent branch, rerun checks, and push dependents so CI checks the updated head commit.
 
 ## Finalize Each Slice
 
@@ -66,5 +63,3 @@ Leave the original oversized PR open until replacement PRs are created and pushe
 |---|---|
 | Creating child issues without PR numbers | Name every issue and PR with `PR <N>` |
 | Nesting PR 2's issue under PR 1's issue | Create parallel sub-issues under the parent Linear issue |
-| Checking only the top diff in a stack | CI checks the head commit; propagate lower-branch fixes upward |
-| Duplicating finalize logic here | Run `/finalize-feature` for each branch |

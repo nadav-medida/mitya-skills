@@ -22,9 +22,13 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
    - **Review feedback** — inline review comments, submitted reviews, issue-level PR comments, bot findings (Greptile, Bugbot, etc.), and human comments about code issues, quality, or requested changes. **Address actionable items** as part of this workflow; skip pure nits or subjective disagreements unless the user said otherwise.
      - Check all feedback surfaces: inline review comments, submitted reviews, and issue-level PR comments. Bot findings can appear as issue-level comments when inline comments are outside the diff; search for bot markers such as `greptile_failed_comments`, `bugbot`, and confidence summaries.
      - Keep review-fix changes narrowly scoped to the comment. Do not restore or reintroduce adjacent prior behavior from the base branch unless the comment explicitly asks for it; if the intended scope is ambiguous, stop and ask.
+     - **Greptile re-trigger** — if you committed fixes for Greptile feedback, after push (step 5) post a **new top-level PR conversation comment** with `@greptileai` so Greptile re-reviews the new commits. One short note on what changed is enough; skip when no Greptile items were addressed.
+       - **Top-level only** — never reply under an existing comment thread (including a prior `@greptileai` comment). Threaded replies do not re-trigger Greptile reliably.
+       - Use an issue comment, not a review-comment reply: `gh pr comment <num> --body "..."` or `gh api repos/<owner>/<repo>/issues/<num>/comments -f body='...'`.
+       - Never use `--edit-last`, `--reply-to`, review-comment reply endpoints, or any API field like `in_reply_to`.
    - If nothing actionable remains, proceed.
 1. **Scope** — which repo/branch(es)? May be multi-repo; if unclear, ask.
-2. **Branch** — if not on a feature branch, create `feature/<short-kebab-description>` off `main`. Descriptive kebab names only, no ticket IDs (details in Medida → Branch).
+2. **Branch** — if not on a feature branch, create one off `main` per **`pr`** → Branch (descriptive kebab, no ticket IDs).
 3. **Commit** — commit uncommitted changes with a short message before checks.
 4. **Checks** — run the repo's linter **with auto-fix enabled**, then typecheck / tests. Use each repo's fix command (not check-only lint). If the linter changes files, commit those fixes (e.g. `lint fix`) before continuing. Detect commands from the project (package.json scripts, Makefile, AGENTS.md/CLAUDE.md). One straightforward fix attempt, re-run once; if still failing, **stop and report** — don't keep iterating.
 5. **Push** — **required.** Push the branch to origin and confirm upstream tracking (`git status -sb` shows `...origin/<branch>`). Follow **`pr`** skill → Push. Do not stop after local checks without pushing unless blocked — report the blocker.
@@ -42,7 +46,7 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 
 **Scope** — single-repo cwd → that repo only. Parent folder (e.g. `medida/`) → infer changed repos from context and finalize in dependency order. Unclear → ask.
 
-**Branch** — PR base is usually `main` (stacked PRs use the stack base). No Linear IDs in branch names (`feature/postscan-warnings`, not `feature/ENG-6868-...` or `mitya/eng-6868-...`).
+**Branch** — PR base is usually `main` (stacked PRs use the stack base). Naming rules (kebab, no Linear IDs) live in **`pr`** → Branch.
 
 **Commit**
 - medida-web / medida-3d — casual one-liner (`lint fix`, `Move files`, `Auto overlays status`); a second line only if complicated.
@@ -62,10 +66,4 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 
 **Multi-repo order** — open PRs in dependency order: 1) medida-3d (migration/schema/API), 2) medida-web (frontend/orpc), 3) medida-ui (iOS). Only repos that changed; stack bases when one PR depends on another. Each PR gets its own Linear sub-issue (see pr).
 
-**Don't**
-- Push without a finalize request (this skill is that request).
-- Stop after local checks without pushing — finalize ends with `git push`.
-- Rewrite an existing PR description when scope is unchanged.
-- Make a ready-to-review PR by default — draft unless asked.
-- Auto-fix beyond one straightforward attempt.
-- Open a medida-ui PR with multiple commits — squash first.
+**Don't stop at green checks** — finalize ends with a pushed branch and a PR (draft by default), not a passing lint run.

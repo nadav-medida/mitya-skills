@@ -37,29 +37,19 @@ Pick a mode at the start of the run. **Default is `default`** unless the user na
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
     "subagent-driven-development" [shape=box];
-    "executing-plans" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+    "Tasks mostly independent?" -> "subagent-driven-development" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
-- Review depth chosen via review mode
-- Faster iteration (no human-in-loop between tasks)
-
 ## The Process
 
-At start: read plan, extract all tasks with full text, note context, pick review mode, create TodoWrite.
+At start: read plan, extract all tasks with full text, note context, pick review mode, create TodoWrite. Before dispatching an implementer, inspect the target repo/worktree for project-local skills under `.agents/skills/*/SKILL.md`. If a task involves setup, validation, tests, dependencies, or environment, include the relevant project-local skill path in the implementer prompt as a **FIRST ACTION REQUIRED**.
 
 ### Per task (all modes)
 
@@ -102,9 +92,9 @@ digraph per_task {
 
 | Mode | Next step |
 |------|-----------|
-| `default` | **superpowers:finishing-a-development-branch** |
-| `review-only-when-done` | Dispatch final feature reviewer → then finishing |
-| `full-flow` | Dispatch final feature reviewer → then finishing |
+| `default` | **/finalize-feature** |
+| `review-only-when-done` | Dispatch final feature reviewer → then /finalize-feature |
+| `full-flow` | Dispatch final feature reviewer → then /finalize-feature |
 
 Final feature reviewer uses the **controller's currently selected model** (see Subagent Model Selection). Per-task subagents use the **cheap tier** (see Subagent Model Selection).
 
@@ -165,7 +155,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer (`full-flow` only)
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer (`full-flow` only)
 
-Final feature reviewer (`review-only-when-done` and `full-flow`): use **superpowers:requesting-code-review** with the controller tier model.
+Final feature reviewer (`review-only-when-done` and `full-flow`): use **/code-review** with the controller tier model.
 
 ## Example Workflow (`default` mode)
 
@@ -192,12 +182,12 @@ Implementer: DONE — 8/8 tests, committed
 
 ...
 
-[All tasks done → superpowers:finishing-a-development-branch]
+[All tasks done → /finalize-feature]
 ```
 
 ### `review-only-when-done` add-on
 
-After all tasks complete, dispatch one final feature reviewer using the controller tier. Fix any issues it finds, re-review until approved, then finishing.
+After all tasks complete, dispatch one final feature reviewer using the controller tier. Fix any issues it finds, re-review until approved, then /finalize-feature.
 
 ### `full-flow` add-on (per task, after implementer DONE)
 
@@ -211,7 +201,7 @@ Code reviewer: ✅ or ❌ → implementer fixes → re-review until ✅
 [Mark task complete]
 ```
 
-After all tasks: final feature reviewer on controller tier, then finishing.
+After all tasks: final feature reviewer on controller tier, then /finalize-feature.
 
 ## Advantages
 
@@ -220,11 +210,6 @@ After all tasks: final feature reviewer on controller tier, then finishing.
 - Fresh context per task
 - Parallel-safe (subagents don't interfere)
 - Subagent can ask questions before and during work
-
-**vs. Executing Plans:**
-- Same session (no handoff)
-- Continuous progress
-- Tunable review cost via review mode
 
 **Quality gates by mode:**
 - All modes: implementer self-review
@@ -244,7 +229,6 @@ After all tasks: final feature reviewer on controller tier, then finishing.
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context
 - Ignore implementer questions
-- Use the **controller tier** for the **final** feature reviewer
 - Silently upgrade **cheap-tier** per-task subagents to controller tier or higher thinking
 - Silently downgrade the final reviewer to cheap tier
 
@@ -266,13 +250,9 @@ After all tasks: final feature reviewer on controller tier, then finishing.
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - Isolated workspace
-- **superpowers:writing-plans** - Plan this skill executes
-- **superpowers:requesting-code-review** - Final reviewer and per-task quality templates
-- **superpowers:finishing-a-development-branch** - After all tasks (and final review when applicable)
+- **/sep-worktree** - Isolated workspace
+- **/code-review** - Final reviewer and per-task quality templates
+- **/finalize-feature** - After all tasks (and final review when applicable)
 
 **Subagents should use:**
-- **superpowers:test-driven-development** - TDD for each task
-
-**Alternative workflow:**
-- **superpowers:executing-plans** - Parallel session instead of same-session execution
+- **/test-driven-development** - TDD for each task
