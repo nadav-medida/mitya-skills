@@ -135,6 +135,6 @@ Linear: [ENG-XXXX](https://linear.app/medida/issue/ENG-XXXX/...)
 
 ### Stacked PRs
 
-PR B depends on PR A: PR A `--base main`, PR B `--base <branch-of-PR-A>`. Note it in the body (e.g. "Stacks on #2140").
+PR B depends on PR A: PR A `--base main`, PR B `--base <branch-of-PR-A>`. Note it in the body (e.g. "Stacks on #2140"). Register the GitHub stack with **`gh stack`** (`link` / `sync` / `submit`) — never Graphite/`gt`. When splitting an oversized PR, follow **`splitting-prs`** for the full `gh stack` sequence.
 
 For Linear: PR B still gets its **own** issue, placed as a **sibling** of PR A's issue (or parentless if PR A's is) per **Medida → Linear** — never a child of PR A's issue.

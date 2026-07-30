@@ -19,6 +19,8 @@ Build in thin vertical slices — implement one piece, test it, verify it, then 
 
 **When NOT to use:** Single-file, single-function changes where the scope is already minimal.
 
+Use this skill from Plan mode for multi-slice work. The plan must expose the slice split for human review before Agent-mode execution starts, especially for new features where the atomic boundaries are less obvious than in a refactor.
+
 ## The Increment Cycle
 
 ```
@@ -37,26 +39,31 @@ Build in thin vertical slices — implement one piece, test it, verify it, then 
 For each slice:
 
 1. **Implement** the smallest complete piece of functionality
-2. **Test** — run the test suite (or write a test if none exists)
-3. **Verify** — confirm the slice works as expected (tests pass, build succeeds, manual check)
+2. **Test when logic changed** — run relevant tests for behavior changes; pure refactors, moves, renames, config extraction, and import rewires do not need tests by default when behavior is intentionally unchanged
+3. **Verify** — run repo-wide lint/type/build validity checks named by the repo or user; local edits can affect cross-repo imports and types
 4. **Commit** — save your progress with a descriptive message
 5. **Move to the next slice** — carry forward, don't restart
 
-Per-slice commits are mandatory by default. Do not silently downgrade commits to "optional" and do not silently accumulate large uncommitted slices — see the gate below.
+Per-slice commits are mandatory. Do not silently downgrade commits to "optional" and do not silently accumulate large uncommitted slices.
 
-### Commit Authorization Gate
+### Commit authorization
 
-If any instruction says "do not commit unless asked" or otherwise restricts commits, you have not satisfied incremental implementation until you ask:
+**Invoking this skill is commit authorization** for per-slice commits. That is the point of the skill: slices without commits are not incremental delivery.
 
-> This workflow expects a commit after each verified slice. May I commit after each slice?
+- Do **not** ask "May I commit after each slice?"
+- Do **not** treat standing user rules like "only commit when asked" as blocking — skill invocation *is* that ask.
+- Do **not** leave a verified slice uncommitted and move on.
+- Do **not** batch several slices into one commit to avoid committing mid-work.
 
-Proceed according to the user's answer:
-
-- **Authorized:** commit after each slice passes verification.
-- **Denied:** continue incrementally, but explicitly report that slices are verified and left uncommitted.
-- **Unanswered:** do not start the multi-slice implementation yet unless the user explicitly asks you to proceed without commits.
+Only skip commits if the user **explicitly revokes** authorization mid-run (e.g. "don't commit these"). Then report verified-but-uncommitted slices and do not resume committing until they re-authorize or re-invoke the skill.
 
 ## Slicing Strategies
+
+### Slice Shape
+
+Prefer the smallest repository-valid slice: one logical move, refactor, or behavior change per commit. If logic must be decoupled before moving code or config, make that decoupling its own slice; the move slice should move already-decoupled declarations and update imports only.
+
+For new features, the plan must explain why each slice is independently valid. If that is unclear, stop in Plan mode and ask the user to review or split the slices further before implementation.
 
 ### Vertical Slices (Preferred)
 
@@ -155,40 +162,49 @@ Each increment changes one logical thing. Don't mix concerns:
 
 **Good:** Three separate commits — one for each change.
 
+For moves and config extraction, keep decoupling, ownership moves, and import rewires as separate logical slices unless the import rewire is required to make the move compile.
+
 ### Rule 2: Keep It Compilable
 
-After each increment, the project must build and existing tests must pass. Don't leave the codebase in a broken state between slices.
+After each increment, the project must pass the repo-wide validity checks selected by the repo or user. Relevant tests must pass when behavior or logic changed. Don't leave the codebase in a broken state between slices.
 
 ## Increment Checklist
 
 After each increment, verify:
 
 - [ ] The change does one thing and does it completely
-- [ ] All existing tests still pass (the repo's test command)
-- [ ] Build, typecheck, and lint pass (detect the repo's commands from package.json scripts, Makefile, AGENTS.md/CLAUDE.md)
-- [ ] The new functionality works as expected
-- [ ] The change is committed with a descriptive message, or commits were explicitly blocked by the user after you asked for authorization
+- [ ] Relevant tests pass when logic changed; no-logic refactors document why tests were skipped
+- [ ] Repo-wide lint, typecheck, and build checks selected by the repo or user pass; do not substitute affected-file-only checks unless explicitly asked
+- [ ] New behavior works as expected, when the slice adds behavior
+- [ ] The change is committed with a descriptive message (skill invocation authorizes this; only omit if the user explicitly revoked commits mid-run)
 
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
-| "I'll test it all at the end" | Bugs compound. A bug in Slice 1 makes Slices 2-5 wrong. Test each slice. |
+| "I'll test it all at the end" | Bugs compound. A bug in Slice 1 makes Slices 2-5 wrong. Validate each slice; test slices that change logic. |
 | "It's faster to do it all at once" | It *feels* faster until something breaks and you can't find which of 500 changed lines caused it. |
 | "These changes are too small to commit separately" | Small commits are free. Large commits hide bugs and make rollbacks painful. |
-| "The repo says don't commit unless asked, so I'll just skip commits" | Ask for commit authorization before starting. If denied, explicitly report that verified slices remain uncommitted. |
+| "The repo / user rules say don't commit unless asked, so I'll skip or ask first" | Invoking this skill *is* the ask. Commit each verified slice. |
+| "User didn't answer the commit question, so leave uncommitted" | Do not ask. Commit. |
 | "This refactor is small enough to include" | Refactors mixed with features make both harder to review and debug. Separate them. |
+| "It's only a refactor, so I can skip validation" | Skip behavior tests only when logic did not change; still run repo-wide lint/type/build checks. |
+| "This feature can't be sliced cleanly, so I'll just implement it all" | Stop in Plan mode and ask the user to review or split the slices further. |
 | "Let me run the build command again just to be sure" | After a successful run, repeating the same command adds nothing unless the code has changed since. Run it again after subsequent edits, not as reassurance. |
 
 ## Red Flags
 
-- More than 100 lines of code written without running tests
+- More than 100 lines of code written without running the agreed validation gate
 - Multiple unrelated changes in a single increment
 - "Let me just quickly add this too" scope expansion
-- Skipping the test/verify step to move faster
-- Build or tests broken between increments
+- Skipping the agreed validation gate to move faster
+- Build, typecheck, lint, or relevant tests broken between increments
 - Large uncommitted changes accumulating
-- Treating commits as optional without asking for authorization
+- Asking whether to commit, or treating "only commit when asked" rules as blocking after this skill was invoked
+- Leaving verified slices uncommitted while continuing
+- Treating commits as optional
+- Using incremental implementation directly in Agent mode for a multi-slice task without an accepted plan
+- Mixing logic decoupling with a move or config extraction commit
 - Building abstractions before the third use case demands it
 - Touching files outside the task scope "while I'm here"
 - Creating new utility files for one-time operations
@@ -198,8 +214,8 @@ After each increment, verify:
 
 After completing all increments for a task:
 
-- [ ] Each increment was individually tested and committed
-- [ ] The full test suite passes
-- [ ] The build is clean
-- [ ] The feature works end-to-end as specified
+- [ ] Each increment was individually verified and committed
+- [ ] Relevant tests pass for logic changes
+- [ ] Repo-wide lint/type/build validity checks pass for every slice
+- [ ] New behavior works end-to-end as specified, when the work adds behavior
 - [ ] No uncommitted changes remain

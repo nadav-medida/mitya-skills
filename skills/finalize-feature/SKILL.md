@@ -30,7 +30,7 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 1. **Scope** — which repo/branch(es)? May be multi-repo; if unclear, ask.
 2. **Branch** — if not on a feature branch, create one off `main` per **`pr`** → Branch (descriptive kebab, no ticket IDs).
 3. **Commit** — commit uncommitted changes with a short message before checks.
-4. **Checks** — run the repo's linter **with auto-fix enabled**, then typecheck / tests. Use each repo's fix command (not check-only lint). If the linter changes files, commit those fixes (e.g. `lint fix`) before continuing. Detect commands from the project (package.json scripts, Makefile, AGENTS.md/CLAUDE.md). One straightforward fix attempt, re-run once; if still failing, **stop and report** — don't keep iterating.
+4. **Checks** — run the repo's **auto-fix** step first (formatter and/or linter fix — see table), then typecheck / tests. Use each repo's write/fix command (not check-only). If that step changes files, commit those fixes (e.g. `fmt`, `lint fix`) before continuing. Detect commands from the project (package.json scripts, Makefile, AGENTS.md/CLAUDE.md). One straightforward fix attempt, re-run once; if still failing, **stop and report** — don't keep iterating.
 5. **Push** — **required.** Push the branch to origin and confirm upstream tracking (`git status -sb` shows `...origin/<branch>`). Follow **`pr`** skill → Push. Do not stop after local checks without pushing unless blocked — report the blocker.
 6. **PR** — read and follow the **`pr`** skill (`~/.claude/skills/pr/SKILL.md` or `~/.agents/skills/pr/SKILL.md`). It owns draft-default, title format, sub-issues, and stacked PR bases.
    - **New PR** — create per `pr` skill.
@@ -49,18 +49,18 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
 **Branch** — PR base is usually `main` (stacked PRs use the stack base). Naming rules (kebab, no Linear IDs) live in **`pr`** → Branch.
 
 **Commit**
-- medida-web / medida-3d — casual one-liner (`lint fix`, `Move files`, `Auto overlays status`); a second line only if complicated.
+- medida-web / medida-3d — casual one-liner (`fmt`, `lint fix`, `Move files`, `Auto overlays status`); a second line only if complicated.
 - medida-ui — **exactly one commit per PR**; squash before opening. Headline matches the PR title (`[ENG-XXXX] Title`, or plain title without Linear). No verbose multi-paragraph commits.
 
-**Checks** — per repo; one fix attempt, re-run once, else stop and report. Always run the linter's **fix** step first — finalizing is not just verifying lint passes, it's applying whatever auto-fixes the linter offers and committing them.
+**Checks** — per repo; one fix attempt, re-run once, else stop and report. Always run the **auto-fix** step first — finalizing is not just verifying checks pass, it's applying formatter/linter write fixes and committing them.
 
-| Repo | Linter fix | Then |
-|------|------------|------|
-| medida-web | `pnpm lint:fix` | `pnpm typecheck` |
+| Repo | Auto-fix | Then |
+|------|-----------|------|
+| medida-web | `pnpm fmt` | `pnpm tsc` |
 | medida-3d | `uv run --no-sync ruff check --fix <changed Python files>` | `uv run --no-sync pyright`, targeted pytest via `uv run --no-sync pytest ...` when relevant |
 | medida-ui | `scripts/lint.sh` (`swiftlint --fix && swiftlint`) | — |
 
-- medida-web: CI also runs `pnpm format:check` — skip unless asked. If `pnpm typecheck` fails with missing-module / dependency errors (`Cannot find module`), run `pnpm install` once and retry before reporting failure.
+- medida-web: formatting is **oxfmt** via `pnpm fmt` (not `pnpm lint-fix` — that only auto-fixes Oxlint). CI also runs `pnpm fmt-check` — skip unless asked. If `pnpm tsc` fails with missing-module / dependency errors (`Cannot find module`), run `pnpm install` once and retry before reporting failure.
 - medida-3d: run ruff on changed Python files only. Run pyright for the full repo/workspace because typing changes can affect far-away imports and call sites. Use `git diff <base>...HEAD --name-only` to choose ruff/test targets; infer `<base>` from `gh pr view --json baseRefName`, conversation, or ask. Run Python tools through `uv run --no-sync` from the relevant workspace so PATH, VIRTUAL_ENV, and interpreter selection match CI. Don't run full Docker CI (`tools/ci.sh check`) unless asked.
 - medida-ui: fix all warnings; only `// swiftlint:disable type_body_length` on architecturally large files (e.g. `CameraScanView`). Don't run full `xcodebuild` unless asked. No GitHub Actions CI — local SwiftLint is the gate.
 

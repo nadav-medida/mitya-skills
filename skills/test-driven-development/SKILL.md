@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use only when the user explicitly requests test-driven development (TDD)
 disable-model-invocation: true
 ---
 

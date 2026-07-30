@@ -96,36 +96,35 @@ digraph per_task {
 | `review-only-when-done` | Dispatch final feature reviewer → then /finalize-feature |
 | `full-flow` | Dispatch final feature reviewer → then /finalize-feature |
 
-Final feature reviewer uses the **controller's currently selected model** (see Subagent Model Selection). Per-task subagents use the **cheap tier** (see Subagent Model Selection).
+Final feature reviewer uses the **controller's currently selected model** (see Subagent Model Selection). Per-task subagents use the **per-task tier** (see Subagent Model Selection).
 
 ## Subagent Model Selection
 
-Two tiers. Pick once at run start; reuse for every dispatch in that tier.
+Two tiers.
 
 | Tier | Used for | Model |
 |------|----------|-------|
-| **Cheap** | Per-task implementers, spec reviewers, code quality reviewers, fix passes | See cheap tier below |
+| **Per-task** | Implementers, spec reviewers, code quality reviewers, fix passes | See below |
 | **Controller** | Final feature reviewer only (`review-only-when-done`, `full-flow`) | Controller's currently selected model, unchanged |
 
-### Cheap tier (per-task subagents)
+### Per-task tier
 
-1. **`composer-2.5-fast`** if it appears in the Task tool's allowed model list.
-2. **Otherwise** the controller's current model at **low thinking** — same model family/slug the session is running, with the lowest thinking tier available for that family in the allowlist (e.g. `-fast` or `-medium` variants; do not pick a higher-thinking slug than the controller is using).
+1. **Prefer auto balanced routing** — omit the Task `model` parameter so the platform router picks.
+2. **If you must pin a model** (user asked, or auto is unavailable/unsuitable): choose a **medium** model suited to the job. Prefer the smallest model that can do the work; do not overshoot to high/max/opus variants when medium will do.
+3. **Honor explicit user model requests** when given.
 
-If the user explicitly requests `composer-2.5-fast` and it is available, use it for all cheap-tier dispatches.
-
-**Do not** silently upgrade cheap-tier subagents to the controller model or a higher-thinking variant "to be safe."
+**Do not** silently upgrade per-task subagents to the strongest available model "to be safe."
 
 ### Controller tier (final feature review)
 
-Dispatch with the **controller's currently selected model** — full thinking, no downgrade to cheap tier or low thinking. This is the one subagent that should apply broad judgment across the full implementation.
+Dispatch with the **controller's currently selected model** — full capability for that model, no downgrade to a weaker per-task default. This is the one subagent that should apply broad judgment across the full implementation.
 
 ### Escalation
 
-Only use a non-cheap-tier model for **per-task** work when the user explicitly requested it, or you stopped and asked for approval. If a task looks too hard for the cheap tier, break it down or ask before escalating.
+If a task looks too hard for a medium/auto per-task dispatch, break it down or ask before escalating to a stronger pinned model.
 
 **Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap tier
+- Touches 1-2 files with a complete spec → auto / medium is enough
 - Touches multiple files with integration concerns → consider splitting before escalating
 - Requires design judgment or broad codebase understanding → ask before escalating per-task model
 
@@ -166,7 +165,7 @@ You: I'm using Subagent-Driven Development (default mode) to execute this plan.
 
 Task 1: Hook installation script
 
-[Dispatch implementer subagent — cheap tier]
+[Dispatch implementer subagent — per-task tier, auto/medium]
 
 Implementer: DONE — implemented, 5/5 tests, self-review clean, committed
 
@@ -192,10 +191,10 @@ After all tasks complete, dispatch one final feature reviewer using the controll
 ### `full-flow` add-on (per task, after implementer DONE)
 
 ```
-[Dispatch spec reviewer — cheap tier]
+[Dispatch spec reviewer — per-task tier, auto/medium]
 Spec reviewer: ✅ or ❌ → implementer fixes → re-review until ✅
 
-[Dispatch code quality reviewer — cheap tier]
+[Dispatch code quality reviewer — per-task tier, auto/medium]
 Code reviewer: ✅ or ❌ → implementer fixes → re-review until ✅
 
 [Mark task complete]
@@ -229,8 +228,8 @@ After all tasks: final feature reviewer on controller tier, then /finalize-featu
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context
 - Ignore implementer questions
-- Silently upgrade **cheap-tier** per-task subagents to controller tier or higher thinking
-- Silently downgrade the final reviewer to cheap tier
+- Silently overshoot per-task model choice (pin high/max/opus when auto/medium would do)
+- Silently downgrade the final reviewer below the controller model
 
 **In `full-flow` only — never:**
 - Skip spec or code quality review for a completed task

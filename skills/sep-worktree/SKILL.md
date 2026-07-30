@@ -34,17 +34,12 @@ Before scripts/tests in the worktree:
 
 ```bash
 set -a && source ../../.env && set +a   # fish: loadenv ../../.env
+uv sync
 ```
 
-For a worktree-local `.venv`:
+CodeArtifact auth is machine-wide (keyring). If `uv sync` fails on private wheels, run `./setup.sh` once for credentials — same as the main checkout. Do not use special worktree install paths.
 
-```bash
-TMP_BUILD_PATH=../../tmp ./setup.sh
-```
-
-(run from the worktree root; reuses cached deps from the outer repo)
-
-After `setup.sh` or `uv sync`, the worktree has a large `.venv` at its root — scope `rg`/`grep` to source dirs (e.g. `medida_3d/`, `backend/`, `evaluation/`) and avoid repo-wide `rg --no-ignore-vcs`, or searches can hang.
+After `uv sync`, the worktree has a large `.venv` at its root — scope `rg`/`grep` to source dirs (e.g. `medida_3d/`, `backend/`, `evaluation/`) and avoid repo-wide `rg --no-ignore-vcs`, or searches can hang.
 
 ## Teardown
 
