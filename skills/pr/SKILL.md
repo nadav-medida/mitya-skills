@@ -4,7 +4,8 @@ description: >-
   Use when the user says /pr, "open a PR", "link this to Linear", or asks to
   name a branch/PR/Linear issue from work in progress — including reconciling an
   existing branch, issue, or PR so all three end up linked. Handles one or many
-  branches.
+  branches. Also when adding or keeping Linear issue ids (ENG-XXXX) in source
+  comments.
 ---
 
 # PR
@@ -85,7 +86,9 @@ Repos: `medidai/medida-web`, `medidai/medida-3d`, `medidai/medida-ui`.
 
 ### Linear
 
-IDs go in **PR titles** (and the medida-ui commit), never branch names. Title: `[ENG-XXXX] Short description`. medida-web and medida-3d enforce the `[ENG-XXXX]` prefix via CI; medida-ui follows it per `AGENTS.md`.
+IDs go in **PR titles** (and the medida-ui commit), never branch names, never source comments. Title: `[ENG-XXXX] Short description`. medida-web and medida-3d enforce the `[ENG-XXXX]` prefix via CI; medida-ui follows it per `AGENTS.md`.
+
+- **No ticket comments** — do not write `ENG-XXXX`, `[ENG-XXXX]`, or Linear URLs in `//`, `#`, `/* */`, docstrings, or other source comments. Comments stay short and describe the code. Traceability is the PR and git history. Do not copy ticket ids from neighboring comments to "match style."
 
 - **Single repo** — user provides the issue ID/link; use it in the title when it still tracks this PR. When you need a **new** issue (referenced issue already has its own PR, is merged/closed, or scope differs): fetch it with `get_issue`. If it has a `parentId`, create a **sibling** under that parent (`parentId` = the parent's id). If it has no parent, create a **parentless** issue. Never nest the new issue under the referenced issue just because it already has a PR — git stacking is not a Linear parent/child relationship.
 - **Multi-repo** — user provides a **parent** issue. Per PR, create an **Engineering** sub-issue (Linear MCP `save_issue`, `parentId` = parent) titled to mirror the PR (from the **branch-wide** diff, per above), and use that sub-issue ID in the title.
@@ -97,6 +100,7 @@ Before pushing, commits on the branch should include **only work that belongs in
 
 - Review `git status` first. Prefer explicit `git add <path>` over `git add -A` — untracked local files (plans, notebooks, skill drafts) are easy to stage by mistake.
 - Do not commit unrelated changes already in the working tree. If the tree mixes unrelated work, say so and ask whether to split before opening the PR.
+- Before commit, scan the staged comment lines (`git diff`) for Linear ids. Strip them. Done only when no added/changed comment cites a ticket.
 
 ### Create PR
 

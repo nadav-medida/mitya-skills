@@ -19,7 +19,9 @@ Split one large branch into reviewable PRs that are easy to follow, correctly li
 
 When splitting an existing branch, first find that branch's current PR and linked Linear issue; use that issue as the parent for replacement issues. If either is missing, create a new parent issue. When the user gives a parent Linear issue directly, every split PR gets its own parallel sub-issue under that parent.
 
-For stacked PRs, create a Linear dependency chain while keeping all issues parallel under the parent: PR N's issue should be `blockedBy` PR N-1's issue. For multi-repo splits, apply this chain only within each repo-local stack; do not block issues across repos unless the PR stack itself crosses repo boundaries.
+After creating the PR sub-issues, mark the **parent** as `blockedBy` **each** PR sub-issue (Linear MCP `save_issue` on the parent with `blockedBy: [<pr1>, <pr2>, …]`). The parent stays open until every split PR's issue is done; do not rely on parent/child nesting alone for that.
+
+For stacked PRs, also create a Linear dependency chain while keeping all issues parallel under the parent: PR N's issue should be `blockedBy` PR N-1's issue. For multi-repo splits, apply this chain only within each repo-local stack; do not block issues across repos unless the PR stack itself crosses repo boundaries.
 
 Pick a short feature name for the stack, then name every Linear issue:
 
@@ -77,4 +79,5 @@ Leave the original oversized PR open until replacement PRs are created and pushe
 |---|---|
 | Creating child issues without PR numbers | Name every issue and PR with `PR <N>` |
 | Nesting PR 2's issue under PR 1's issue | Create parallel sub-issues under the parent Linear issue |
+| Parent not blocked by PR sub-issues | Set parent `blockedBy` to every PR sub-issue |
 | Using `gt track` or skipping `gh stack link`/`sync` | Register stacks with `gh stack` only |

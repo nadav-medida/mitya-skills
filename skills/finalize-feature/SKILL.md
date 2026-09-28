@@ -36,6 +36,8 @@ Prepare a branch for review: **triage (existing PR) → checks → commit → pu
    - **New PR** — create per `pr` skill.
    - **Existing PR** — fix title/Linear link if wrong. **Update PR body only when branch scope changed** (new commits, files, or behavior vs the PR base — compare `git diff <base>...HEAD` to what the description already covers). Do not rewrite an accurate description for lint-only or review-fix follow-ups.
 
+7. **Final response — Linear first** — include the Linear issue number for every finalized PR, linked to its Linear review page so the user can review the diff there. Get the review URL from the PR's Linear bot comment (`linear-review-link`); if unavailable, link to the Linear issue page. Use the issue number in the link label, e.g. `[ENG-1234 — review in Linear](<verified Linear review URL>)`. The Linear link can be the only review link; never return only a GitHub PR link. This also applies when called through `finalize-in-sep-worktree`.
+
 ## Medida
 
 | Repo | Path | GitHub |
