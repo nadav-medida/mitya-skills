@@ -1,4 +1,4 @@
-# Mitya's Skills
+# Mitya's Skills - no more! moohahha
 
 The basic idea: engineer better context and behavior for LLMs with small,
 composable skills. They are the skills I was willing to keep after reading, modifying, and
