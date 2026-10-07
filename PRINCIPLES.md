@@ -29,5 +29,24 @@ enterprise layering. Apply these defaults unless a project says otherwise.
 - Favor discoverability: explicit interfaces, local conventions, clear checklists.
 - Match the surrounding code's idiom.
 
+## Scratch and debug artifacts
+- Temporary files, debug dumps, scratch scripts, and one-off exploration data
+  from a conversation do not belong in a repo root, home directory, or /tmp.
+- Save them under a `_debug/` directory at the workspace root (sibling to the
+  project repos), inside a subdirectory named for the current task/topic —
+  not loose at the top level of `_debug`. Create `_debug/` there if it does
+  not already exist.
+
+## Definition of done
+- A feature is done when its code is staged — not committed, not pushed.
+  Only commit or push when explicitly asked.
+
+## Dotenv profiles (prod/dev)
+- Load dotenv profiles with `override=true` so the file always wins over
+  whatever is already in the shell.
+- Before loading a profile, check for and clear stale environment variables
+  (e.g. a leftover DSN) that could otherwise silently take precedence or
+  linger after switching profiles.
+
 Lean on these when unsure: Rust (ownership/safety, errors-as-values),
 OCaml (domain modules, exhaustive matching), Effect-style TS (typed effects/errors).
