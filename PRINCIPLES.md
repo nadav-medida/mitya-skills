@@ -47,6 +47,13 @@ enterprise layering. Apply these defaults unless a project says otherwise.
 - Before loading a profile, check for and clear stale environment variables
   (e.g. a leftover DSN) that could otherwise silently take precedence or
   linger after switching profiles.
+- Prod DB: load `/opt/secrets/prod_py.env`. Dev DB: load `/opt/secrets/dev_py.env`.
+
+## Python virtual environment
+- Default to the `pipeline-runner-server` venv (the `.venv` under
+  `medida-3d/backend/pipeline_runner_server/`) for Python work.
+- If a task is a side quest into another repo, ask first whether to reuse
+  that venv or set up a new one — don't decide unilaterally.
 
 Lean on these when unsure: Rust (ownership/safety, errors-as-values),
 OCaml (domain modules, exhaustive matching), Effect-style TS (typed effects/errors).
