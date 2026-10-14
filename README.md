@@ -20,6 +20,27 @@ You can also install one skill directly:
 npx skills@latest add Xallt/mitya-skills --skill grill-me --agent cursor
 ```
 
+### Personal setup (macOS)
+
+From this clone, run:
+
+```bash
+./install-principles.sh
+```
+
+This installs the engineering principles and personal skills for Claude Code,
+Codex, and Cursor. It also clones
+[`medidai/medida-context`](https://github.com/medidai/medida-context) into
+`~/.medida/context` and runs its `scripts/install.sh`. You need the GitHub CLI
+(`gh`), authenticated with access to that repository.
+
+The context installer links its skill into `~/.claude/skills` and
+`~/.agents/skills` and sets up a launchd job that syncs every ten minutes.
+Re-running `./install-principles.sh` updates the context checkout from `main`
+with a fast-forward pull before running its installer again. `./sync-skills.sh`
+also runs this setup after pulling this repo; failures go to
+`../_debug/mitya-skills-sync/sync.log`.
+
 ## Read Before Installing
 
 Please read skills before deciding to add!

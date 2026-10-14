@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install-principles.sh — install PRINCIPLES.md and ./skills for every repo.
+# install-principles.sh — install principles, personal skills, and medida-context.
 #
 #   ./install-principles.sh                  # principles for every harness + skills
 #   ./install-principles.sh claude codex     # principles for these harnesses + skills
@@ -135,6 +135,27 @@ install_skills() {
   echo "            $CURSOR_SKILLS"
 }
 
+install_medida_context() {
+  local context_dir="$HOME/.medida/context"
+
+  [ "$(uname)" = Darwin ] || {
+    echo "error: medida-context installation requires macOS" >&2
+    return 1
+  }
+  command -v gh >/dev/null 2>&1 || {
+    echo "error: medida-context requires gh; run 'brew install gh' and 'gh auth login'" >&2
+    return 1
+  }
+
+  if [ -e "$context_dir/.git" ]; then
+    git -C "$context_dir" pull --ff-only origin main
+  else
+    mkdir -p "$(dirname "$context_dir")"
+    gh repo clone medidai/medida-context "$context_dir"
+  fi
+  "$context_dir/scripts/install.sh"
+}
+
 # --- harness registry -------------------------------------------------------
 # Add a harness by writing install_<name>() and listing it in ALL_HARNESSES.
 
@@ -189,3 +210,6 @@ done
 
 echo "Installing skills from $SKILLS_DIR"
 install_skills
+
+echo "Installing medida-context"
+install_medida_context
