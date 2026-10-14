@@ -55,5 +55,13 @@ enterprise layering. Apply these defaults unless a project says otherwise.
 - If a task is a side quest into another repo, ask first whether to reuse
   that venv or set up a new one — don't decide unilaterally.
 
+## Database migrations
+- Agents write migrations; the user applies them.
+- Never apply a migration unless the user explicitly asks. This covers
+  `supabase db push`, `supabase migration up`, `supabase db reset`, and
+  running migration SQL or backfill scripts with `--apply` against any database.
+- Create Supabase migrations with `supabase migration new <name>`. Don't
+  hand-write or rename migration filenames or timestamps.
+
 Lean on these when unsure: Rust (ownership/safety, errors-as-values),
 OCaml (domain modules, exhaustive matching), Effect-style TS (typed effects/errors).
